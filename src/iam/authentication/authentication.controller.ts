@@ -9,7 +9,7 @@ import {
 import { AuthenticationService } from './authentication.service';
 import { SignUpDto } from './dto/sign-up.dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto/sign-in.dto';
-import { response } from 'express';
+import { Response, response } from 'express';
 
 @Controller('authentication')
 export class AuthenticationController {
@@ -23,10 +23,17 @@ export class AuthenticationController {
   // Tells the server to respond with a 200 status code
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  login(
+  async login(
     @Body() body: SignInDto,
     @Res({ passthrough: true }) response: Response,
   ) {
-    return this.authService.Login(body);
+    const accessTokens = await this.authService.Login(body);
+    response.cookie('accessToken', accessTokens, {
+      secure: true,
+      httpOnly: true,
+      sameSite: true,
+    });
+
+    // return this.authService.Login(body);
   }
 }
