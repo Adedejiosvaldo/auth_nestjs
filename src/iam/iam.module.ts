@@ -17,12 +17,16 @@ import { AccessTokenGuard } from './authentication/guards/access-token/access-to
     JwtModule.registerAsync(jwtConfig.asProvider()),
     ConfigModule.forFeature(jwtConfig),
   ],
+
   providers: [
     { provide: HashingService, useClass: BcryptService },
     AuthenticationService,
     // APP_GUARD(AccessTokenGuard),
+    // AuthenticationGuard
     { provide: APP_GUARD, useClass: AccessTokenGuard },
+    // AccessTokenGuard,
   ],
+
   controllers: [AuthenticationController],
 })
 export class IamModule {}
