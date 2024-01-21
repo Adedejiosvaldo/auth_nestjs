@@ -27,13 +27,13 @@ export class AuthenticationController {
     @Body() body: SignInDto,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const accessTokens = await this.authService.Login(body);
-    response.cookie('accessToken', accessTokens, {
-      secure: true,
-      httpOnly: true,
-      sameSite: true,
-    });
+    // const accessTokens = await this.authService.Login(body);
+    // response.cookie('accessToken', accessTokens, {
+    //   secure: true,
+    //   httpOnly: true,
+    //   sameSite: true,
+    // });
 
-    // return this.authService.Login(body);
+    return this.authService.Login(body);
   }
 }
