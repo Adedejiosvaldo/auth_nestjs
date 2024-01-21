@@ -39,7 +39,17 @@ export class AuthenticationService {
         password: hashedPassword,
       });
 
-      return newUser;
+      const accessToken = await this.jwtService.signAsync(
+        { sub: newUser._id, email: newUser.email },
+        {
+          issuer: this.jwtConfiguration.issuer,
+          audience: this.jwtConfiguration.audience,
+          secret: this.jwtConfiguration.secret,
+          expiresIn: this.jwtConfiguration.accessTokenTTL,
+        },
+      );
+
+      return { accessToken, data: newUser };
     } catch (error) {
       const puUniqueViolationErrorCode = '23505';
 
