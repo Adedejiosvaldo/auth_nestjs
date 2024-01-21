@@ -58,7 +58,7 @@ export class AuthenticationService {
     if (!user) {
       throw new UnauthorizedException('User does not exist');
     }
-    const isPasswordCorrect = this.hashingService.compare(
+    const isPasswordCorrect = await this.hashingService.compare(
       password,
       user.password,
     );
