@@ -1,5 +1,5 @@
 export interface ActiveUserData {
   // sub -> user id
-  sub: number;
+  sub: string;
   email: string;
 }

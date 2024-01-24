@@ -15,6 +15,7 @@ import { Response, response } from 'express';
 import { AuthType } from './enums/auth.type.enums';
 import { Public } from './decorators/public.decorator';
 import { MongooseDuplicateExceptionFilter } from 'src/exception/mongoose-duplicate.exception/mongoose-duplicate.exception.filter';
+import { RefreshTokenDTO } from './dto/refresh-token/refresh-token.dto';
 
 // @Auth(AuthType.None)
 @Public()
@@ -42,5 +43,12 @@ export class AuthenticationController {
     // });
 
     return this.authService.Login(body);
+  }
+
+  // Tells the server to respond with a 200 status code
+  @HttpCode(HttpStatus.OK)
+  @Post('refresh')
+  refresh(@Body() refreshToken: RefreshTokenDTO) {
+    return this.authService.refreshTokens(refreshToken);
   }
 }

@@ -20,6 +20,7 @@ export class MongooseExceptionExceptionFilter implements ExceptionFilter {
         error = {
           statusCode: HttpStatus.NOT_FOUND,
           message: 'Not Found',
+          others: 'Send from the exception filter',
         };
         break;
       } // general Mongoose error

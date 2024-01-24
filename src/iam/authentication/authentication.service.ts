@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { User } from 'src/users/entities/user.entity';
 import { HashingService } from '../hashing/hashing.service';
 import { SignUpDto } from './dto/sign-up.dto/sign-up.dto';
@@ -15,6 +15,8 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import jwtConfig from '../config/jwt.config';
 import { ConfigType } from '@nestjs/config';
 import { ActiveUserData } from '../interfaces/jwt.dto';
+import { RefreshTokenDTO } from './dto/refresh-token/refresh-token.dto';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class AuthenticationService {
@@ -77,17 +79,50 @@ export class AuthenticationService {
     if (!isPasswordCorrect) {
       throw new UnauthorizedException('Password not correct');
     }
+    // Partial makes all the properties in the active data interface - optional
+    return await this.generateToken(user);
+  }
 
-    const accessToken = await this.jwtService.signAsync(
-      { sub: user._id, email: user.email },
+  public async generateToken(user: User) {
+    const [accessToken, refreshToken] = await Promise.all([
+      this.signToken<Partial<ActiveUserData>>(
+        user._id,
+        this.jwtConfiguration.accessTokenTTL,
+        { email: user.email },
+      ),
+      this.signToken(user._id, this.jwtConfiguration.refreshTokenTTL),
+    ]);
+
+    return { accessToken, refreshToken };
+  }
+
+  async refreshTokens(refreshTokensDTO: RefreshTokenDTO) {
+    try {
+      const { sub } = await this.jwtService.verifyAsync<
+        Pick<ActiveUserData, 'sub'>
+      >(refreshTokensDTO.refreshToken, {
+        secret: this.jwtConfiguration.secret,
+        audience: this.jwtConfiguration.audience,
+        issuer: this.jwtConfiguration.issuer,
+      });
+      const user = await this.userModel.findById(sub).exec();
+
+      return this.generateToken(user);
+      // return this.authService.Login(body);
+    } catch (error) {
+      throw new UnauthorizedException('Refresh token');
+    }
+  }
+
+  private async signToken<T>(userId: string, expiresIn: number, payload?: T) {
+    return await this.jwtService.signAsync(
+      { sub: userId, ...payload },
       {
         issuer: this.jwtConfiguration.issuer,
         audience: this.jwtConfiguration.audience,
         secret: this.jwtConfiguration.secret,
-        expiresIn: this.jwtConfiguration.accessTokenTTL,
+        expiresIn,
       },
     );
-
-    return { accessToken };
   }
 }
