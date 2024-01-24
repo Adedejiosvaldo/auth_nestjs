@@ -17,6 +17,8 @@ import { ConfigType } from '@nestjs/config';
 import { ActiveUserData } from '../interfaces/jwt.dto';
 import { RefreshTokenDTO } from './dto/refresh-token/refresh-token.dto';
 import { ObjectId } from 'mongodb';
+import { RefreshTokenIdsStorage } from './dto/refresh-token-ids.storage/refresh-token-ids.storage';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class AuthenticationService {
@@ -25,6 +27,7 @@ export class AuthenticationService {
     @InjectModel(User.name) private readonly userModel: Model<User>,
     private readonly hashingService: HashingService,
     private readonly jwtService: JwtService,
+    private readonly refreshTokenStorage: RefreshTokenIdsStorage,
 
     // Injecting config
     @Inject(jwtConfig.KEY)
@@ -84,29 +87,49 @@ export class AuthenticationService {
   }
 
   public async generateToken(user: User) {
+    // generate random token refresh ID
+    const refreshTokenID = randomUUID();
+    console.log(refreshTokenID);
+
     const [accessToken, refreshToken] = await Promise.all([
       this.signToken<Partial<ActiveUserData>>(
         user._id,
         this.jwtConfiguration.accessTokenTTL,
         { email: user.email },
       ),
-      this.signToken(user._id, this.jwtConfiguration.refreshTokenTTL),
+      this.signToken(user._id, this.jwtConfiguration.refreshTokenTTL, {
+        refreshTokenID,
+      }),
     ]);
+
+    // console.log(refreshTokenID),
+    await this.refreshTokenStorage.insert(user._id, refreshTokenID);
 
     return { accessToken, refreshToken };
   }
 
   async refreshTokens(refreshTokensDTO: RefreshTokenDTO) {
     try {
-      const { sub } = await this.jwtService.verifyAsync<
-        Pick<ActiveUserData, 'sub'>
+      const { sub, refreshTokenID } = await this.jwtService.verifyAsync<
+        Pick<ActiveUserData, 'sub'> & { refreshTokenID: string }
       >(refreshTokensDTO.refreshToken, {
         secret: this.jwtConfiguration.secret,
         audience: this.jwtConfiguration.audience,
         issuer: this.jwtConfiguration.issuer,
       });
-      const user = await this.userModel.findById(sub).exec();
+      const user = await this.userModel.findById(sub);
+      // Validate token
+      const isValid = await this.refreshTokenStorage.validate(
+        user._id,
+        refreshTokenID,
+      );
+      // Refresh token rotation
+      if (isValid) {
 
+        await this.refreshTokenStorage.invalidate(user._id);
+      } else {
+        throw new Error('Refresh token is invalid');
+      }
       return this.generateToken(user);
       // return this.authService.Login(body);
     } catch (error) {

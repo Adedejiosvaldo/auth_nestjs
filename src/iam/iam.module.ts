@@ -10,6 +10,7 @@ import jwtConfig from './config/jwt.config';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { AccessTokenGuard } from './authentication/guards/access-token/access-token.guard';
+import { RefreshTokenIdsStorage } from './authentication/dto/refresh-token-ids.storage/refresh-token-ids.storage';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { AccessTokenGuard } from './authentication/guards/access-token/access-to
     // APP_GUARD(AccessTokenGuard),
     // AuthenticationGuard
     { provide: APP_GUARD, useClass: AccessTokenGuard },
+    RefreshTokenIdsStorage,
     // AccessTokenGuard,
   ],
 
