@@ -4,6 +4,7 @@ import {
   OnApplicationShutdown,
 } from '@nestjs/common';
 import { Redis } from 'ioredis';
+import { InvalidRefreshToken } from 'src/exception/refresh-tokens.exceptions/InvalidStorageToken';
 
 @Injectable()
 export class RefreshTokenIdsStorage
@@ -29,6 +30,9 @@ export class RefreshTokenIdsStorage
   // validate the token id passed in and return a boolean
   async validate(userID: string, tokenID: string): Promise<boolean> {
     const storedID = await this.redisClient.get(this.getKey(userID));
+    if (storedID !== tokenID) {
+      throw new InvalidRefreshToken();
+    }
     return storedID === tokenID;
   }
 

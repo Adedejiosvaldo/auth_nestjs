@@ -19,6 +19,7 @@ import { RefreshTokenDTO } from './dto/refresh-token/refresh-token.dto';
 import { ObjectId } from 'mongodb';
 import { RefreshTokenIdsStorage } from './dto/refresh-token-ids.storage/refresh-token-ids.storage';
 import { randomUUID } from 'crypto';
+import { InvalidRefreshToken } from 'src/exception/refresh-tokens.exceptions/InvalidStorageToken';
 
 @Injectable()
 export class AuthenticationService {
@@ -125,7 +126,6 @@ export class AuthenticationService {
       );
       // Refresh token rotation
       if (isValid) {
-
         await this.refreshTokenStorage.invalidate(user._id);
       } else {
         throw new Error('Refresh token is invalid');
@@ -133,7 +133,10 @@ export class AuthenticationService {
       return this.generateToken(user);
       // return this.authService.Login(body);
     } catch (error) {
-      throw new UnauthorizedException('Refresh token');
+      if (error instanceof InvalidRefreshToken) {
+        throw new UnauthorizedException('Access Denied');
+      }
+      throw new UnauthorizedException();
     }
   }
 
