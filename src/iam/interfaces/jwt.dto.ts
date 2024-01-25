@@ -6,4 +6,5 @@ export interface ActiveUserData {
   email: string;
   refreshUserID?: string;
   role: Role;
+  permission: string;
 }
