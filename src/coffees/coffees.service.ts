@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Catch, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Coffee } from './entities/coffee.entity/coffee.entity';
 import { Model } from 'mongoose';
 import { CreateCoffeeDTO } from './dto/create-coffee.entity/create-coffee.entity';
 import { UpdateCoffeeDto } from './dto/update-coffee.dto/update-coffee.dto';
+import { MongooseDuplicateExceptionFilter } from 'src/exception/mongoose-duplicate.exception/mongoose-duplicate.exception.filter';
 
 @Injectable()
 export class CoffeesService {
@@ -24,8 +25,13 @@ export class CoffeesService {
     return coffee;
   }
 
-  createCoffee(body: CreateCoffeeDTO) {
-    return this.coffeeModel.create(body);
+  //   @Catch(MongooseDuplicateExceptionFilter)
+
+  async createCoffee(body: CreateCoffeeDTO) {
+    const { name, brand, flavors } = body;
+    const coffee = await this.coffeeModel.create({ name, brand, flavors });
+    console.log(coffee);
+    return coffee;
   }
 
   async updateCoffee(id: string, updatedBody: UpdateCoffeeDto) {

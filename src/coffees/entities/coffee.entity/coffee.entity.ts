@@ -4,7 +4,7 @@ import mongoose, { Document } from 'mongoose';
 @Schema()
 export class Coffee extends Document {
   // Declaring types
-  @Prop({ type: mongoose.SchemaTypes.String, index: true })
+  @Prop({ unique: true })
   name: string;
 
   @Prop()
@@ -14,7 +14,7 @@ export class Coffee extends Document {
   flavors: string[];
 
   //   Events
-  @Prop({ default: 0 })
-  recommendations: number;
+  //   @Prop({ default: 0 })
+  //   recommendations: number;
 }
 export const coffeeSchema = SchemaFactory.createForClass(Coffee);

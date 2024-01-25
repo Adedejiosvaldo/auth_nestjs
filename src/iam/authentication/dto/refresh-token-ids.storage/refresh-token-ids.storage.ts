@@ -15,7 +15,6 @@ export class RefreshTokenIdsStorage
   onApplicationShutdown(signal?: string) {
     return this.redisClient.quit();
   }
-
   //   When the application starts
   onApplicationBootstrap() {
     this.redisClient = new Redis({ host: 'localhost', port: 6379 });
