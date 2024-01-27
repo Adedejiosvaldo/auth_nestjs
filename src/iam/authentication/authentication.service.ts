@@ -90,7 +90,6 @@ export class AuthenticationService {
   public async generateToken(user: User) {
     // generate random token refresh ID
     const refreshTokenID = randomUUID();
-    console.log(refreshTokenID);
 
     const [accessToken, refreshToken] = await Promise.all([
       this.signToken<Partial<ActiveUserData>>(
@@ -103,7 +102,6 @@ export class AuthenticationService {
       }),
     ]);
 
-    // console.log(refreshTokenID),
     await this.refreshTokenStorage.insert(user._id, refreshTokenID);
 
     return { accessToken, refreshToken };

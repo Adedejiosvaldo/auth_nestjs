@@ -6,6 +6,7 @@ import {
   Patch,
   Post,
   UseFilters,
+  UseGuards,
 } from '@nestjs/common';
 import { CoffeesService } from './coffees.service';
 import { CreateCoffeeDTO } from './dto/create-coffee.entity/create-coffee.entity';
@@ -16,12 +17,18 @@ import { ActiveUserData } from 'src/iam/interfaces/jwt.dto';
 import { Roles } from 'src/iam/authorization/decorators/roles.decorator';
 import { Role } from 'src/users/enums/role.enum';
 import { MongooseDuplicateExceptionFilter } from 'src/exception/mongoose-duplicate.exception/mongoose-duplicate.exception.filter';
+import { ApiKeyGuard } from 'src/iam/authentication/guards/api-key/api-key.guard';
+import { Auth } from 'src/iam/authentication/decorators/auth.decorator';
+import { AuthType } from 'src/iam/authentication/enums/auth.type.enums';
 
+// UseGuards
+// @UseGuards(ApiKeyGuard)
 @Controller('coffees')
 export class CoffeesController {
   constructor(private readonly coffeeService: CoffeesService) {}
 
   //   @UseFilters(MongooseDuplicateExceptionFilter)
+  @Auth(AuthType.ApiKey, AuthType.Bearer)
   @Roles(Role.Admin)
   @Post()
   create(@Body() body: CreateCoffeeDTO, @ActiveUser() request: ActiveUserData) {
@@ -29,10 +36,11 @@ export class CoffeesController {
     return this.coffeeService.createCoffee(body);
   }
 
-  @Public()
+  //   @Public()
+  @Auth(AuthType.ApiKey, AuthType.Bearer)
+  //   @Auth(AuthType.None)
   @Get()
   getAllCoffees(@ActiveUser('sub') request: ActiveUserData) {
-    console.log(request);
     return this.coffeeService.getAllCoffees();
   }
 
