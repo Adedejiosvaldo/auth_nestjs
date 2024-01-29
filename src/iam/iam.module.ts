@@ -22,6 +22,9 @@ import { ApiKeyController } from './api-key/api-key.controller';
 import { ApiKeyService } from './api-key/generate-apikey.service';
 import { AuthenticationGuard } from './authentication/guards/authentication/authentication.guard';
 import { UsersService } from 'src/users/users.service';
+import { GoogleAuthenticationService } from './authentication/social/goole-authentication.service';
+import { GoogleAuthenticationController } from './authentication/social/goole-authentication.controller';
+import { OtpAuthService } from './authentication/otp/otp-auth.service';
 
 @Module({
   imports: [
@@ -46,8 +49,14 @@ import { UsersService } from 'src/users/users.service';
     ApiKeyService,
     ApiKeyGuard,
     UsersService,
+    GoogleAuthenticationService,
+    OtpAuthService,
   ],
 
-  controllers: [AuthenticationController, ApiKeyController],
+  controllers: [
+    AuthenticationController,
+    ApiKeyController,
+    GoogleAuthenticationController,
+  ],
 })
 export class IamModule {}

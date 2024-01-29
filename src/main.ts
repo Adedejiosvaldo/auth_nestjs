@@ -6,6 +6,7 @@ import { MongooseExceptionExceptionFilter } from './exception/mongoose-exception
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalFilters(new MongooseExceptionExceptionFilter());
+  app.enableCors();
   app.useGlobalPipes(
     new ValidationPipe({
       //   transform: true,

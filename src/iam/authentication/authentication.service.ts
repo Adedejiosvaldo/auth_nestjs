@@ -20,6 +20,7 @@ import { ObjectId } from 'mongodb';
 import { RefreshTokenIdsStorage } from './dto/refresh-token-ids.storage/refresh-token-ids.storage';
 import { randomUUID } from 'crypto';
 import { InvalidRefreshToken } from 'src/exception/refresh-tokens.exceptions/InvalidStorageToken';
+import { OtpAuthService } from './otp/otp-auth.service';
 
 @Injectable()
 export class AuthenticationService {
@@ -29,6 +30,8 @@ export class AuthenticationService {
     private readonly hashingService: HashingService,
     private readonly jwtService: JwtService,
     private readonly refreshTokenStorage: RefreshTokenIdsStorage,
+    // OTP
+    private readonly otpCodeService: OtpAuthService,
 
     // Injecting config
     @Inject(jwtConfig.KEY)
@@ -83,7 +86,19 @@ export class AuthenticationService {
     if (!isPasswordCorrect) {
       throw new UnauthorizedException('Password not correct');
     }
+
     // Partial makes all the properties in the active data interface - optional
+
+    if (user.isTfaEnable) {
+      const isValid = this.otpCodeService.verifyCode(
+        signinDTO.TfaCode,
+        user.tfaSecret,
+      );
+
+      if (!isValid) {
+        throw new UnauthorizedException('Invalid 2FA code');
+      }
+    }
     return await this.generateToken(user);
   }
 
