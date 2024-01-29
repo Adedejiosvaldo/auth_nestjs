@@ -25,6 +25,8 @@ import { UsersService } from 'src/users/users.service';
 import { GoogleAuthenticationService } from './authentication/social/goole-authentication.service';
 import { GoogleAuthenticationController } from './authentication/social/goole-authentication.controller';
 import { OtpAuthService } from './authentication/otp/otp-auth.service';
+import * as session from 'express-session';
+import * as passport from 'passport';
 
 @Module({
   imports: [

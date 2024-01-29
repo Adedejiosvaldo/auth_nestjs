@@ -101,7 +101,7 @@ export class AuthenticationService {
     }
     return await this.generateToken(user);
   }
-
+  
   public async generateToken(user: User) {
     // generate random token refresh ID
     const refreshTokenID = randomUUID();
